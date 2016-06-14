@@ -32,7 +32,7 @@ class Source :
 					exit()
 				else:
 					downloadTries += 1
-					print("Essai n°"+str(downloadTries))
+					print(type(self).__name__+" : Essai n°"+str(downloadTries))
 					time.sleep(3)
 		return xmlFile
 
