@@ -29,7 +29,7 @@ class Source :
 			except (urllib.request.URLError, socket.timeout) as err:
 				if downloadTries > 3:
 					print("Problème de téléchargement, réessayez plus tard")
-					exit()
+					return False
 				else:
 					downloadTries += 1
 					print(type(self).__name__+" : Essai n°"+str(downloadTries))
@@ -50,9 +50,11 @@ class Source :
 		urls = []
 		for playlist in self._playLists :
 			self._nomEmission = playlist[1]
-			playlistXml = self._parseXml(self.__downloadXml(self._urlXml.format(playlist[0])))
-			if not playlistXml == False :
-				urls += self._extractUrls(playlistXml)
+			xmlData = self.__downloadXml(self._urlXml.format(playlist[0]))
+			if not xmlData == False :
+				playlistXml = self._parseXml(xmlData)
+				if not playlistXml == False :
+					urls += self._extractUrls(playlistXml)
 		return urls
 
 
@@ -172,6 +174,8 @@ class FranceInfo(Source) :
 		[14152,"Tout et son contraire, l'intégrale"],
 		[11063,"Tout Info tout éco"],
 		[11531,"Le billet de François Morel"],
+		[14103,"Ca nous marque"],
+		[11453,"Les pourquoi"],
 	]
 
 	# URL des podcasts.
