@@ -224,11 +224,12 @@ class Bfm(Source) :
 		self._playLists = Bfm.__playLists
 
 	def __getDate(self,url) :
-		grep_date_mois = '[0-9]{2}[0-9]{2}'
-		if re.search("-"+grep_date_mois+"-", url):
-			tmp = re.findall(grep_date_mois, url)[0]
-			date = tmp[:2] + '/' + tmp[2:]
-			return date+"/"+time.strftime("%y")
+		grep_date_mois_liste = ['-[0-9]{2}-[0-9]{2}-','-[0-9]{2}[0-9]{2}-']
+		for grep_date_mois in grep_date_mois_liste :
+			if re.search(grep_date_mois, url):
+				tmp = (re.findall(grep_date_mois, url)[0]).replace("-","")
+				date = tmp[:2] + '/' + tmp[2:]
+				return date+"/"+time.strftime("%y")
 		return ""
 
 	def _parseXml(self,xmlData) :
