@@ -20,7 +20,7 @@ class Source :
 	# Dossier ou les vidéos sont sauvegardées
 	outputdir = homedir + "/Téléchargements/"
 
-	def __downloadXml(self,url):
+	def _downloadXml(self,url):
 		downloadTries = 0
 		xmlFile = None
 		while xmlFile is None :
@@ -50,7 +50,7 @@ class Source :
 		urls = []
 		for playlist in self._playLists :
 			self._nomEmission = playlist[1]
-			xmlData = self.__downloadXml(self._urlXml.format(playlist[0]))
+			xmlData = self._downloadXml(self._urlXml.format(playlist[0]))
 			if not xmlData == False :
 				playlistXml = self._parseXml(xmlData)
 				if not playlistXml == False :
@@ -176,6 +176,7 @@ class FranceInfo(Source) :
 		[11531,"Le billet de François Morel"],
 		[14103,"Ca nous marque"],
 		[11453,"Les pourquoi"],
+		[11549,"Sur les épaules de Darwin"],
 	]
 
 	# URL des podcasts.
@@ -208,6 +209,16 @@ class FranceInfo(Source) :
 
 class Bfm(Source) :
 
+	__template = """
+	    <object class="BrightcoveExperience">
+        <param name="playerID" value="1225340300001" />
+        <param name="playerKey" value="AQ~~,AAAAzBCHAyE~,4dQGL3-Dcc52cNRXVBpbhFHpDeu15lHx" />
+        <param name="@videoPlayer" value="{}" />
+    </object>
+  """
+
+	__patternVideoID = 'data-video-id="[0-9]{13}"'
+
 	# L'URL des vidéos.
 	__playLists=[
 		['http://bfmbusiness.bfmtv.com/mediaplayer/video/marc-fiorentino-',"Fiorantino"]
@@ -222,6 +233,11 @@ class Bfm(Source) :
 	def __init__(self):
 		self._urlXml = Bfm.__urlXml
 		self._playLists = Bfm.__playLists
+		self.__webServerProcess = ""
+		self.__launchTmpWebServer()
+
+	def __del__(self):
+		self.__webServerProcess.terminate()
 
 	def __getDate(self,url) :
 		grep_date_mois_liste = ['-[0-9]{2}-[0-9]{2}-','-[0-9]{2}[0-9]{2}-']
@@ -240,9 +256,28 @@ class Bfm(Source) :
 		for link in xmldoc.find_all('a', href=True):
 			if Bfm.__playLists[0][0] in link['href']:
 				url = link['href']
-				urls.append([self._nomEmission,self.__getDate(url),url])
+				tmpUrl = self.__createTmpUrl(url)
+				if tmpUrl == False :
+					tmpUrl = url
+				urls.append([self._nomEmission,self.__getDate(url),tmpUrl])
 		return urls
 
+	def __createTmpUrl(self,url) :
+		xmlData = str(super(Bfm,self)._downloadXml(url))
+		if re.search(Bfm.__patternVideoID, xmlData):
+			videoID = (re.findall(Bfm.__patternVideoID, xmlData)[0])[15:28]
+			self.__createTmpHtml(videoID)
+			return "http://localhost:8888/{}".format(videoID)
+		return False
+
+	def __createTmpHtml(self,videoID) :
+		file = open("/tmp/"+videoID, 'a')
+		file.write(Bfm.__template.format(videoID))
+		file.close()
+
+	def __launchTmpWebServer(self) :
+		cmd_args = ['python','-m','SimpleHTTPServer',"8888"]
+		self.__webServerProcess = subprocess.Popen(cmd_args,cwd="/tmp/")
 
 class Download :
 
