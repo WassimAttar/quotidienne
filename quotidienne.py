@@ -20,6 +20,10 @@ class Source :
 	# Dossier ou les vidéos sont sauvegardées
 	outputdir = homedir + "/Téléchargements/"
 
+	# Qualité de la vidéo
+	# ['http-\d*',-1] ['hls_v5_os-\d*',-2]
+	quality = 'best'
+
 	def _downloadXml(self,url):
 		downloadTries = 0
 		xmlFile = None
@@ -285,11 +289,11 @@ class Bfm(Source) :
 class Download :
 
 	def __init__(self,Source):
+		self.__quality = Source.quality
 		self.__checkYoutubeDlInstallation()
 		self.__checkHistoryFile()
 		self.__outputdir = Source.outputdir
 		self.__urls(Source.getUrls())
-
 
 	def __checkYoutubeDlInstallation(self):
 		try:
@@ -303,12 +307,13 @@ class Download :
 			file = open(historique, 'w+')
 			file.close()
 
-
 	def __getQuality(self,url):
+		if self.__quality == "best" :
+			return "best"
 		cmd_args = ['youtube-dl','-F', url]
 		p = subprocess.check_output(cmd_args)
 		p.rstrip()
-		return re.findall('http-\d*',p)[-1]
+		return re.findall(self.__quality[0],p)[self.__quality[1]]
 
 	def __checkHistory(self,logPlaylist):
 		file = open(historique, 'r')
@@ -331,10 +336,9 @@ class Download :
 		return p.wait()
 
 	def __youtubeDl(self,url) :
-		cmd_args = ['youtube-dl','-f','best', "-o", self.__outputdir+"%(title)s.%(ext)s", url]
+		cmd_args = ['youtube-dl','-f', self.__getQuality(url), "-o", self.__outputdir+"%(title)s.%(ext)s", url]
 		p = subprocess.Popen(cmd_args)
 		return p.wait()
-
 
 	def __download(self,url) :
 		extensions = ['mp3','mp4']
