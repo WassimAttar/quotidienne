@@ -351,7 +351,7 @@ class Download :
 					self.__addHistory(logPlaylist)
 
 def real_main() :
-	Sources = [Canal,Bfm,FranceInfo]
+	Sources = [Bfm,FranceInfo]
 
 	for Source in Sources :
 		Download(Source())
