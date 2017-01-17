@@ -240,12 +240,15 @@ class Bfm(Source) :
 		self.__webServerProcess.terminate()
 
 	def __getDate(self,url) :
-		grep_date_mois_liste = ['-[0-9]{2}-[0-9]{2}-','-[0-9]{2}[0-9]{2}-']
+		grep_date_mois_liste = ['-[0-9]{2}-[0-9]{2}-[0-9]{6}','-[0-9]{4}-[0-9]{6}']
 		for grep_date_mois in grep_date_mois_liste :
 			if re.search(grep_date_mois, url):
 				tmp = (re.findall(grep_date_mois, url)[0]).replace("-","")
-				date = tmp[:2] + '/' + tmp[2:]
-				return date+"/"+time.strftime("%y")
+				date = tmp[:2] + '/' + tmp[2:4]
+				year = time.strftime("%y")
+				if int(time.strftime("%m")) < 3 :
+					year = str(int(year)-1)
+				return date+"/"+year
 		return ""
 
 	def _parseXml(self,xmlData) :
