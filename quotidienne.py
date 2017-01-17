@@ -326,7 +326,7 @@ class Download :
 		file.close()
 
 	def __wget(self,url):
-		cmd_args = ['wget',"-P", self.__outputdir, url]
+		cmd_args = ['wget',"-c","-P", self.__outputdir, url]
 		p = subprocess.Popen(cmd_args)
 		return p.wait()
 
