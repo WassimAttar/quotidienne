@@ -253,7 +253,7 @@ class Bfm(Source) :
 				tmp = (re.findall(grep_date_mois, url)[0]).replace("-","")
 				date = tmp[:2] + '/' + tmp[2:4]
 				year = time.strftime("%y")
-				if int(time.strftime("%m")) < 3 :
+				if int(time.strftime("%m")) < int(tmp[:2]) :
 					year = str(int(year)-1)
 				return date+"/"+year
 		return ""
