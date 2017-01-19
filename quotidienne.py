@@ -289,6 +289,57 @@ class Bfm(Source) :
 		cmd_args = ['python','-m','SimpleHTTPServer',"8888"]
 		self.__webServerProcess = subprocess.Popen(cmd_args,cwd="/tmp/")
 
+class Pluzz(Source) :
+
+	# L'URL des vidéos.
+	__playLists=[
+		['/videos/vu_,[0-9]{9}.html',"Vu"]
+	]
+
+	# URL de toutes les vidéos d'une émission donnée.
+	__urlXml = 'http://pluzz.francetv.fr/videos/vu.html'
+
+	# Dossier ou les vidéos sont sauvegardées
+	outputdir = homedir + "/Vidéos/en attente/"
+
+	# Qualité de la vidéo
+	quality = ['hls_v5_os-\d*',-2]
+
+	# Nom du fichier de sortie
+	outputnameformat = "%(title)s-%(id)s.%(ext)s"
+
+	def __init__(self):
+		self._urlXml = Pluzz.__urlXml
+		self._playLists = Pluzz.__playLists
+
+	def __getDate(self,xmldoc) :
+		grep_date_mois = 'Emission du [0-9]{2}-[0-9]{2} '
+		if re.search(grep_date_mois, xmldoc):
+			tmp_dates = re.findall(grep_date_mois, xmldoc)
+		dates = []
+		for tmp_date in tmp_dates :
+			date = tmp_date[12:14] + '/' + tmp_date[15:17]
+			year = time.strftime("%y")
+			if int(time.strftime("%m")) < int(tmp_date[15:17]) :
+				year = str(int(year)-1)
+			dates.append(date+"/"+year)
+		tmp = dates.pop(0)
+		dates.append(tmp)
+		return dates
+
+	def _parseXml(self,xmlData) :
+		return str(xmlData)
+
+	def _extractUrls(self,xmldoc):
+		urls = []
+		dates = self.__getDate(xmldoc)
+		position = 0
+		for url in re.findall(Pluzz.__playLists[0][0], xmldoc) :
+			urls.append([self._nomEmission,dates[position],"http://pluzz.francetv.fr"+url])
+			position += 1
+		return urls
+
+
 class Download :
 
 	def __init__(self,Source):
@@ -359,7 +410,7 @@ class Download :
 					self.__addHistory(logPlaylist)
 
 def real_main() :
-	Sources = [Bfm,FranceInfo]
+	Sources = [Bfm,FranceInfo,Pluzz]
 
 	for Source in Sources :
 		Download(Source())
