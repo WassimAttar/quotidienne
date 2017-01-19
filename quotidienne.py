@@ -317,7 +317,7 @@ class Download :
 		cmd_args = ['youtube-dl','-F', url]
 		p = subprocess.check_output(cmd_args)
 		p.rstrip()
-		return re.findall(self.__quality[0],p)[self.__quality[1]]
+		return re.findall(self.__quality[0],str(p))[self.__quality[1]]
 
 	def __checkHistory(self,logPlaylist):
 		file = open(historique, 'r')
