@@ -24,6 +24,9 @@ class Source :
 	# ['http-\d*',-1] ['hls_v5_os-\d*',-2]
 	quality = 'best'
 
+	# Nom du fichier de sortie
+	outputnameformat = "%(title)s.%(ext)s"
+
 	def _downloadXml(self,url):
 		downloadTries = 0
 		xmlFile = None
@@ -290,6 +293,7 @@ class Download :
 
 	def __init__(self,Source):
 		self.__quality = Source.quality
+		self.__outputnameformat = Source.outputnameformat
 		self.__checkYoutubeDlInstallation()
 		self.__checkHistoryFile()
 		self.__outputdir = Source.outputdir
@@ -336,7 +340,7 @@ class Download :
 		return p.wait()
 
 	def __youtubeDl(self,url) :
-		cmd_args = ['youtube-dl','-f', self.__getQuality(url), "-o", self.__outputdir+"%(title)s.%(ext)s", url]
+		cmd_args = ['youtube-dl','-f', self.__getQuality(url), "-o", self.__outputdir+self.__outputnameformat, url]
 		p = subprocess.Popen(cmd_args)
 		return p.wait()
 
