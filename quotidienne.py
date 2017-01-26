@@ -316,6 +316,8 @@ class Pluzz(Source) :
 		grep_date_mois = 'Emission du [0-9]{2}-[0-9]{2} '
 		if re.search(grep_date_mois, xmldoc):
 			tmp_dates = re.findall(grep_date_mois, xmldoc)
+		else :
+			return ""
 		dates = []
 		for tmp_date in tmp_dates :
 			date = tmp_date[12:14] + '/' + tmp_date[15:17]
