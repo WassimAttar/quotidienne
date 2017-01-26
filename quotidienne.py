@@ -273,7 +273,7 @@ class Bfm(Source) :
 		return urls
 
 	def __createTmpUrl(self,url) :
-		xmlData = str(super(Bfm,self)._downloadXml(url))
+		xmlData = str(super()._downloadXml(url))
 		if re.search(Bfm.__patternVideoID, xmlData):
 			videoID = (re.findall(Bfm.__patternVideoID, xmlData)[0])[15:28]
 			self.__createTmpHtml(videoID)
