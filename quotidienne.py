@@ -134,7 +134,7 @@ class Canal(Source) :
 				return re.findall(grep_date_annee, valeur)[0]
 			elif re.search(grep_date_mois, valeur):
 				return re.findall(grep_date_mois, valeur)[0]+"/"+time.strftime("%y")
-		return ""
+		return time.strftime("%d/%m/%y")
 
 	def _extractUrls(self,xmldoc):
 		urls = []
@@ -202,7 +202,7 @@ class FranceInfo(Source) :
 		if re.search("-"+grep_date_annee_complete+"-", url):
 			tmp = re.findall(grep_date_annee_complete, url)[0]
 			return tmp.replace(".", "/")
-		return ""
+		return time.strftime("%d/%m/%Y")
 
 	def _extractUrls(self,xmldoc):
 		urls = []
@@ -253,10 +253,10 @@ class Bfm(Source) :
 				tmp = (re.findall(grep_date_mois, url)[0]).replace("-","")
 				date = tmp[:2] + '/' + tmp[2:4]
 				year = time.strftime("%y")
-				if int(time.strftime("%m")) < int(tmp[:2]) :
+				if int(time.strftime("%m")) < int(tmp[2:4]) :
 					year = str(int(year)-1)
 				return date+"/"+year
-		return ""
+		return time.strftime("%d/%m/%y")
 
 	def _parseXml(self,xmlData) :
 		return BeautifulSoup(xmlData, "lxml")
@@ -325,8 +325,8 @@ class Pluzz(Source) :
 			if int(time.strftime("%m")) < int(tmp_date[15:17]) :
 				year = str(int(year)-1)
 			dates.append(date+"/"+year)
-		tmp = dates.pop(0)
-		dates.append(tmp)
+		# tmp = dates.pop(0)
+		# dates.append(tmp)
 		return dates
 
 	def _parseXml(self,xmlData) :
@@ -336,7 +336,7 @@ class Pluzz(Source) :
 		urls = []
 		dates = self.__getDate(xmldoc)
 		position = 0
-		for url in re.findall(Pluzz.__playLists[0][0], xmldoc) :
+		for url in re.findall(Pluzz.__playLists[0][0], xmldoc)[2:] :
 			urls.append([self._nomEmission,dates[position],"http://pluzz.francetv.fr"+url])
 			position += 1
 		return urls
@@ -423,3 +423,4 @@ if __name__ == "__main__":
 		real_main()
 	except KeyboardInterrupt:
 		exit('\nERROR: Interrompu par l\'utilisateur')
+
