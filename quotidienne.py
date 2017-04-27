@@ -334,11 +334,10 @@ class Pluzz(Source) :
 
 	def _extractUrls(self,xmldoc):
 		urls = []
-		dates = self.__getDate(xmldoc)
-		position = 0
-		for url in re.findall(Pluzz.__playLists[0][0], xmldoc)[2:] :
-			urls.append([self._nomEmission,dates[position],"http://pluzz.francetv.fr"+url])
-			position += 1
+		date = self.__getDate(xmldoc)
+		url = re.findall(Pluzz.__playLists[0][0], xmldoc)[1:-1]
+		for date_url in zip(date,url) :
+			urls.append([self._nomEmission,date_url[0],"http://pluzz.francetv.fr"+date_url[1]])
 		return urls
 
 
