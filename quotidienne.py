@@ -57,7 +57,11 @@ class Source :
 		urls = []
 		for playlist in self._playLists :
 			self._nomEmission = playlist[1]
-			xmlData = self._downloadXml(self._urlXml.format(playlist[0]))
+			try :
+				url = self._urlXml.format(playlist[0])
+			except :
+				url = playlist[0]
+			xmlData = self._downloadXml(url)
 			if not xmlData == False :
 				playlistXml = self._parseXml(xmlData)
 				if not playlistXml == False :
@@ -202,7 +206,7 @@ class FranceInfo(Source) :
 		if re.search("-"+grep_date_annee_complete+"-", url):
 			tmp = re.findall(grep_date_annee_complete, url)[0]
 			return tmp.replace(".", "/")
-		return time.strftime("%d/%m/%Y")
+		return ""
 
 	def _extractUrls(self,xmldoc):
 		urls = []
@@ -256,7 +260,7 @@ class Bfm(Source) :
 				if int(time.strftime("%m")) < int(tmp[2:4]) :
 					year = str(int(year)-1)
 				return date+"/"+year
-		return time.strftime("%d/%m/%y")
+		return ""
 
 	def _parseXml(self,xmlData) :
 		return BeautifulSoup(xmlData, "lxml")
@@ -289,7 +293,7 @@ class Bfm(Source) :
 		cmd_args = ['python','-m','SimpleHTTPServer',"8888"]
 		self.__webServerProcess = subprocess.Popen(cmd_args,cwd="/tmp/")
 
-class Pluzz(Source) :
+class PluzzOld(Source) :
 
 	# L'URL des vidéos.
 	__playLists=[
@@ -339,6 +343,76 @@ class Pluzz(Source) :
 		for date_url in zip(date,url) :
 			urls.append([self._nomEmission,date_url[0],"http://pluzz.francetv.fr"+date_url[1]])
 		return urls
+
+class DirectRadio(Source) :
+
+	__patternVideoID = 'http://podcast.bfmbusiness.com/channel.*?mp3'
+
+	# L'URL des vidéos.
+	__playLists=[
+		['https://direct-radio.fr/bfm/podcast/marc-fiorentino/c-est-votre-argent',"C'est votre argent"],
+		['https://direct-radio.fr/BFM/podcast/Marc-Fiorentino/Chronique-de-Marc-Fiorentino',"Chronique de Marc Fiorentino"]
+	]
+
+	# Dossier ou les vidéos sont sauvegardées
+	outputdir = homedir + "/Vidéos/en attente/"
+
+	def __init__(self):
+		self._playLists = DirectRadio.__playLists
+
+	def __getDate(self,url) :
+		grep_date_mois = '/[0-9]{8}_'
+		if re.search(grep_date_mois, url):
+			tmp = re.findall(grep_date_mois, url)[0][1:-1]
+			return tmp[-2:]+"/"+tmp[-4:-2]+"/"+tmp[0:4]
+		return ""
+
+	def _parseXml(self,xmlData) :
+		return str(xmlData)
+
+	def _extractUrls(self,xmldoc):
+		urls = []
+		urlsTmp = re.findall(DirectRadio.__patternVideoID, xmldoc)
+		for url in urlsTmp :
+			urls.append([self._nomEmission,self.__getDate(url),url])
+		return urls
+
+class Pluzz(Source) :
+
+	__patternVideoID = 'www.france.tv/france-2/vu/[0-9]{4}.*?html'
+
+	# L'URL des vidéos.
+	__playLists=[
+		['https://www.france.tv/france-2/vu/',"Vu"]
+	]
+
+	# Nom du fichier de sortie
+	outputnameformat = "%(title)s-%(id)s.%(ext)s"
+
+	# Dossier ou les vidéos sont sauvegardées
+	outputdir = homedir + "/Vidéos/en attente/"
+
+	def __init__(self):
+		self._playLists = Pluzz.__playLists
+
+	def __getDate(self,url) :
+		dictionnaireMois = {"janvier":"01","fevrier":"02","mars":"03","avril":"04","mai":"05","juin":"06","juillet":"07","aout":"08","septembre":"09","octobre":"10","novembre":"11","decembre":"12"}
+		grep_date_mois = '-[0-9]{2}-.*?-[0-9]{4}'
+		if re.search(grep_date_mois, url):
+			tmp = re.findall(grep_date_mois, url)[0][1:].split("-")
+			return tmp[0]+"/"+dictionnaireMois[tmp[1]]+"/"+tmp[2]
+		return ""
+
+	def _parseXml(self,xmlData) :
+		return str(xmlData)
+
+	def _extractUrls(self,xmldoc):
+		urls = []
+		urlsTmp = re.findall(Pluzz.__patternVideoID, xmldoc)
+		for url in urlsTmp :
+			urls.append([self._nomEmission,self.__getDate(url),url])
+		return urls
+
 
 
 class Download :
@@ -411,7 +485,7 @@ class Download :
 					self.__addHistory(logPlaylist)
 
 def real_main() :
-	Sources = [Bfm,FranceInfo,Pluzz]
+	Sources = [FranceInfo,Pluzz,DirectRadio]
 
 	for Source in Sources :
 		Download(Source())
