@@ -397,7 +397,7 @@ class Pluzz(Source) :
 
 	def __getDate(self,url) :
 		dictionnaireMois = {"janvier":"01","fevrier":"02","mars":"03","avril":"04","mai":"05","juin":"06","juillet":"07","aout":"08","septembre":"09","octobre":"10","novembre":"11","decembre":"12"}
-		grep_date_mois = '-[0-9]{2}-.*?-[0-9]{4}'
+		grep_date_mois = '-[0-9]{1,2}-.*?-[0-9]{4}'
 		if re.search(grep_date_mois, url):
 			tmp = re.findall(grep_date_mois, url)[0][1:].split("-")
 			return tmp[0]+"/"+dictionnaireMois[tmp[1]]+"/"+tmp[2]
